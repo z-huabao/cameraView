@@ -1,19 +1,114 @@
 #:kivy 1.0.9
 
-<MainWidget>:
-    # image: image
-    Scatter:
-        # Label:
-            # font_size: 170
-            # center_x: root.width // 2
-            # top: root.top // 2
-            # text: "000000"
+<SliderButton@ToggleButton>:
+    slider:
+    group: "slider"
+    size_hint_x: None
+    on_press: self.slider.text = self.text
+    on_state: self.slider.opacity = float(self.state == 'down')
 
-        Image:
-            id: image
-            # center_x: root.width // 2
-            # top: root.height // 2
-            pos: 0, 0
-            size: root.width, root.height
-            texture: root.img_texture
+<BLabel@ButtonBehavior+Label>:
+    text_size: self.size
+    color: 0, 0, 0, 1
+    valign: 'center'
+
+<LabelCheckBox@BoxLayout>:
+    text: 'checkbox'
+    group: ''
+    spacing: 5
+    CheckBox:
+        id: cb
+        group: root.group
+        size_hint: 0.15, 1
+    BLabel:
+        text: root.text
+        on_press: cb.active = not cb.active
+
+<NumSlider@BoxLayout>:
+    text: ""
+    size_hint_y: None
+    Slider:
+        id: slider
+        range: 0, 1
+        value: 0.5
+    Label:
+        text: "%.2f" % slider.value
+        size_hint_x: None
+
+<ImScatter>:
+    double_tap_scale: 3
+    do_rotation: False
+    scale_min: 0.3
+    scale_max: 5
+
+<MainWidget>:
+    slider: slider
+    img_widget: img_widget
+
+    orientation: "vertical"
+    FloatLayout:
+        ImScatter:
+            id: img_widget
+            # hide slider
+            on_touch_down: slider.opacity = 0
+            Image:
+                size: root.width, root.height - 70
+                texture: root.img_texture
+                # allow_stretch: True
+                # keep_ratio: False
+        BoxLayout:
+            pos: 0, 100
+            size: 6 * root.width // 10, 30
+            size_hint_y: None
+            Slider:
+                id: slider
+                text: ""
+                range: 0, 1
+                value: 0.5
+                opacity: 0
+                on_value: root.cam.set(self.text, self.value)
+                on_opacity: root.update_slider_value(self)
+            Label:
+                text: "%.2f" % slider.value
+                opacity: slider.opacity
+                size_hint_x: None
+
+    BoxLayout:
+        id: tool_bar
+        height: 70
+        size_hint_y: None
+        spacing: 10
+        canvas.before:
+            # add layout background
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        SliderButton:
+            text: "对比度"
+            slider: slider
+        SliderButton:
+            text: "亮度"
+            slider: slider
+        SliderButton:
+            text: "曝光时间"
+            slider: slider
+        Button:
+            text: "拍照"
+            center_x: root.width // 2
+            width: root.width // 5
+            size_hint_x: None
+            on_press: root.save()
+        Spinner:
+            text: root.resolution_init
+            values: ("1024x784", "1280x960", "2592x1944")
+            on_text: root.cam.set_resolution(self.text)
+        Spinner:
+            text: "相机" + root.cam_id
+            values: ["相机"  + i for i in root.cam_ids]
+            on_text: root.open_camera(self.text[2:])
+        LabelCheckBox:
+            text: "自动曝光"
 
