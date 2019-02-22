@@ -17,10 +17,20 @@ class Camera(object):
                 '亮度': cv2.CAP_PROP_BRIGHTNESS,
                 'exposure': cv2.CAP_PROP_EXPOSURE,
                 '曝光时间': cv2.CAP_PROP_EXPOSURE,
+                # 'auto_exposure': cv2.CAP_PROP_AUTO_EXPOSURE,
+                # '自动曝光': cv2.CAP_PROP_AUTO_EXPOSURE,
         }
 
     def read(self):
         if self.cam: return self.cam.read()[1]
+
+    def set(self, key, value):
+        if self.cam and key in self.map:
+            self.cam.set(self.map[key], value)
+
+    def get(self, key):
+        if self.cam and key in self.map:
+            return self.cam.get(self.map[key])
 
     def set_resolution(self, value):
         """ value: string, like 1024x768 """
@@ -29,13 +39,8 @@ class Camera(object):
             self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, int(w))
             self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, int(h))
 
-    def set(self, key, value):
-        if self.cam and key in self.map:
-            self.cam.set(self.map[key], value)
-
-    def get(self, key):
-        if self.cam and key in self.map:
-            self.cam.get(self.map[key])
+    def set_auto_exposure(self, is_auto):
+        self.cam.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75 if is_auto else 0.25)
 
 def read(f):
     return cv2.imread(f)

@@ -1,11 +1,22 @@
 #:kivy 1.0.9
 
+<NumSlider@BoxLayout>:
+    text: ""
+    size_hint: None, None
+    opacity: 0
+    value: 0.5
+    Slider:
+        range: 0, 1
+        value: root.value
+        on_value: root.value = self.value
+    Label:
+        text: "%.2f" % root.value
+        size_hint_x: None
+
 <SliderButton@ToggleButton>:
-    slider:
+    active: int(self.state == 'down')
     group: "slider"
     size_hint_x: None
-    on_press: self.slider.text = self.text
-    on_state: self.slider.opacity = float(self.state == 'down')
 
 <BLabel@ButtonBehavior+Label>:
     text_size: self.size
@@ -16,24 +27,16 @@
     text: 'checkbox'
     group: ''
     spacing: 5
+    active: True
     CheckBox:
-        id: cb
         group: root.group
         size_hint: 0.15, 1
+        color: 0, 0.5, 0.5, 1
+        active: root.active
+        on_active: root.active = self.active
     BLabel:
         text: root.text
-        on_press: cb.active = not cb.active
-
-<NumSlider@BoxLayout>:
-    text: ""
-    size_hint_y: None
-    Slider:
-        id: slider
-        range: 0, 1
-        value: 0.5
-    Label:
-        text: "%.2f" % slider.value
-        size_hint_x: None
+        on_press: root.active = not root.active
 
 <ImScatter>:
     double_tap_scale: 3
@@ -42,36 +45,24 @@
     scale_max: 5
 
 <MainWidget>:
-    slider: slider
     img_widget: img_widget
 
     orientation: "vertical"
     FloatLayout:
         ImScatter:
             id: img_widget
-            # hide slider
-            on_touch_down: slider.opacity = 0
             Image:
                 size: root.width, root.height - 70
                 texture: root.img_texture
                 # allow_stretch: True
                 # keep_ratio: False
-        BoxLayout:
+        NumSlider:
+            id: slider
             pos: 0, 100
-            size: 6 * root.width // 10, 30
-            size_hint_y: None
-            Slider:
-                id: slider
-                text: ""
-                range: 0, 1
-                value: 0.5
-                opacity: 0
-                on_value: root.cam.set(self.text, self.value)
-                on_opacity: root.update_slider_value(self)
-            Label:
-                text: "%.2f" % slider.value
-                opacity: slider.opacity
-                size_hint_x: None
+            size: 8 * root.width // 10, 30
+            disabled: not self.opacity or self.text == '曝光时间' and lcb.active
+            on_value: if self.opacity: root.cam.set(self.text, self.value)
+            on_text: root.update_slider_value(self)
 
     BoxLayout:
         id: tool_bar
@@ -88,13 +79,13 @@
 
         SliderButton:
             text: "对比度"
-            slider: slider
+            on_state: slider.text = self.text; slider.opacity = self.active
         SliderButton:
             text: "亮度"
-            slider: slider
+            on_state: slider.text = self.text; slider.opacity = self.active
         SliderButton:
             text: "曝光时间"
-            slider: slider
+            on_state: slider.text = self.text; slider.opacity = self.active
         Button:
             text: "拍照"
             center_x: root.width // 2
@@ -110,5 +101,7 @@
             values: ["相机"  + i for i in root.cam_ids]
             on_text: root.open_camera(self.text[2:])
         LabelCheckBox:
+            id: lcb
             text: "自动曝光"
+            on_active: root.cam.set_auto_exposure(self.active)
 

@@ -2,7 +2,9 @@
 """--"""
 import os, sys
 import datetime
+import numpy as np
 import img_tools as imt
+
 from kivy.app import App
 from kivy.properties import NumericProperty, ObjectProperty, ListProperty, \
         StringProperty
@@ -38,8 +40,9 @@ class ImScatter(Scatter):
                 pos = Vector(touch.x, touch.y)
                 self.pos = (size / 2 - pos) * self.double_tap_scale
                 self.scale = self.double_tap_scale
+            return True
         else:
-            super(ImScatter, self).on_touch_down(touch)
+            return super(ImScatter, self).on_touch_down(touch)
 
 class MainWidget(BoxLayout):
     cam = ObjectProperty(None)
@@ -70,11 +73,11 @@ class MainWidget(BoxLayout):
             self.open_camera(self.cam_ids[-1])
 
     def update_slider_value(self, slider):
-        if slider.opacity > 0:
-            value = self.cam.get(slider.text)
-            print(value, '--------------')
-            if value is not None:
-                slider.value = value
+        value = self.cam.get(slider.text)
+        if value is not None:
+            value = min(value, 1)
+            value = max(value, 0)
+            slider.value = value
 
     def update_frame(self, dt):
         if self.cam:
@@ -88,6 +91,9 @@ class MainWidget(BoxLayout):
 
     def save(self):
         if self.frame is not None:
+            white_frame = np.zeros_like(self.frame) + 255
+            self.img_texture.blit_buffer(white_frame.tostring(), colorfmt='bgr', bufferfmt='ubyte')
+
             out_file = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '.jpg'
             out_file = os.path.join(SAVE_DIR, out_file)
             print("Out file to: %s" % out_file)
