@@ -4,6 +4,7 @@ class Camera(object):
     def __init__(self, id_):
         try:
             self.cam = cv2.VideoCapture(int(id_))
+            print(self.cam)
             frame = self.read()
             assert frame is not None
         except Exception as e:
@@ -27,6 +28,7 @@ class Camera(object):
     def set(self, key, value):
         if self.cam and key in self.map:
             self.cam.set(self.map[key], value)
+            print('set %s(%s) -> %s' %(key, self.map[key], value))
 
     def get(self, key):
         if self.cam and key in self.map:

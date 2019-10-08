@@ -41,6 +41,7 @@
 <ImScatter>:
     double_tap_scale: 3
     do_rotation: False
+    do_translation: False
     scale_min: 0.3
     scale_max: 5
 
@@ -51,8 +52,10 @@
     FloatLayout:
         ImScatter:
             id: img_widget
+            auto_bring_to_front: False
             Image:
                 size: root.width, root.height - 70
+                pos: 0, 100
                 texture: root.img_texture
                 # allow_stretch: True
                 # keep_ratio: False

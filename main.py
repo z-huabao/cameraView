@@ -70,7 +70,7 @@ class MainWidget(BoxLayout):
         """ auto detect camera devices and refresh to spinner """
         self.cam_ids = sorted(f[5:] for f in os.listdir('/dev/') if 'video' == f[:5])
         if self.cam is None and len(self.cam_ids):
-            self.open_camera(self.cam_ids[-1])
+            self.open_camera(self.cam_ids[0])
 
     def update_slider_value(self, slider):
         value = self.cam.get(slider.text)
@@ -87,6 +87,7 @@ class MainWidget(BoxLayout):
                 h, w = self.frame.shape[:2]
                 # print(h, w)
                 self.img_texture = Texture.create(size=(w, h), colorfmt='bgr')
+                self.img_texture.flip_vertical()
                 self.img_texture.blit_buffer(self.frame.tostring(), colorfmt='bgr', bufferfmt='ubyte')
 
     def save(self):
